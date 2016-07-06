@@ -1,7 +1,9 @@
 {
   "name": "react-testing",
   "version": "0.0.0",
-  "dependencies": {},
+  "dependencies": {
+    "node-static": "^0.7.7"
+  },
   "devDependencies": {
     "babel-jest": "^5.0.1",
     "babelify": "^6.0.2",
