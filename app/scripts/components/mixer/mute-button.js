@@ -21,9 +21,9 @@ class MuteButton extends React.Component {
 
   render () {
     return (
-      <div className="row">
-        <div className="col-sm-6">
-          <button className={'btn btn-sm mute-button ' + (this.state.muted ? 'btn-danger' : '')} onClick={this.handleClick.bind(this)}>M</button>
+      <div className="row bottom">
+        <div className="col-sm-12">
+          <button className={'btn btn-sm mute-button ' + (this.state.muted ? 'btn-danger' : '')} onClick={this.handleClick.bind(this)}>{this.state.muted ? 'Unmute' : 'Mute'}</button>
         </div>
       </div>
     )

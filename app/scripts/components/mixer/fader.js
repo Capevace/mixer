@@ -34,7 +34,7 @@ class Fader extends React.Component {
 
   render () {
     return (
-      <div>
+      <div class="row">
         <p className="volume-label">
           Value: {this.readableValue()}
         </p>
@@ -45,7 +45,6 @@ class Fader extends React.Component {
           max={20.0}
           step={0.1}
           orient="vertical"
-          //style={this.constructor.styles.input}
           value={this.state.value}
           onChange={this.handleChange.bind(this)}
           />
@@ -53,21 +52,5 @@ class Fader extends React.Component {
     )
   }
 }
-
-// Fader.styles = {
-//   input: {
-//     width: '300px',
-//     height: '20px',
-//     display: 'block',
-//     position: 'relative',
-//     marginLeft: '50%',
-//     left: '-150px',
-//     marginTop: '50%',
-//     top: '110px',
-//     transform: 'rotateZ(-90deg)',
-//     writingMode: 'bt-lr',
-//     background: 'transparent'
-//   }
-// }
 
 export default Fader

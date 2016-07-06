@@ -4,6 +4,8 @@ import { clamp } from '../math'
 
 import Fader from './fader'
 import MuteButton from './mute-button'
+import GainKnob from './gain-knob'
+import Equalizer from './equalizer'
 
 
 class Channel extends React.Component {
@@ -91,6 +93,11 @@ class Channel extends React.Component {
   render () {
     return (
       <div className="col-sm-2">
+        <div className="row bottom">
+          <p className="centered">{this.props.channel.name}</p>
+        </div>
+        <GainKnob onChange={this.handleGainChange.bind(this)} />
+        <Equalizer />
         <MuteButton initialMuteState={this.props.channel.initialMuteState} onChange={this.handleMuteStateChange.bind(this)} />
         <Fader initialValue={this.state.faderValue} onChange={this.handleFaderChange.bind(this)} />
       </div>

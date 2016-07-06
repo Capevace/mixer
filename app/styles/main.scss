@@ -41,6 +41,43 @@ body {
   -webkit-outline: none !important;
 }
 
+.mute-button {
+  position: relative;
+  width: 100%;
+}
+
+.knob {
+  cursor: pointer;
+  display: block;
+  position: relative;
+  margin-left: 50%;
+  left: -25px;
+  width: 50px;
+  height: 50px;
+  background: red;
+  border-radius: 25px;
+
+  &::after {
+    content: "";
+    display: block;
+    position: relative;
+    margin-top: -21px;
+    margin-left: 50%;
+    width: 5px;
+    left: -2.5px;
+    height: 10px;
+    background: #000;
+    border-radius: 5px;
+  }
+}
+
+.centered {
+  text-align: center;
+}
+
+.row.bottom {
+  margin-bottom: 20px;
+}
 
 input[type=range].music-slider {
   -webkit-appearance: none;

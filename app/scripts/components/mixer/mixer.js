@@ -21,15 +21,21 @@ class Mixer extends React.Component {
           initialFaderValue: 0
         },
         {
-          name: 'Drums',
+          name: 'Piano',
           source: 'sounds/piano.mp3',
           initialFaderValue: 0,
           initialMuteState: false
         },
         {
-          name: 'Drums',
+          name: 'Clav',
           source: 'sounds/clav.mp3',
           initialFaderValue: -60,
+          initialMuteState: true
+        },
+        {
+          name: 'Sax',
+          source: 'sounds/sax.mp3',
+          initialFaderValue: 10,
           initialMuteState: true
         }
       ],
