@@ -79,6 +79,12 @@ gulp.task('fonts', function() {
     .pipe($.size());
 });
 
+gulp.task('sounds', function() {
+  return gulp.src(['app/sounds/**/*'])
+    .pipe(gulp.dest('dist/sounds'))
+    .pipe($.size());
+});
+
 gulp.task('extras', function () {
   return gulp.src(['app/*.txt', 'app/*.ico'])
     .pipe(gulp.dest('dist/'))
@@ -124,7 +130,7 @@ gulp.task('minify', ['minify:js', 'minify:css']);
 
 gulp.task('clean', del.bind(null, 'dist'));
 
-gulp.task('bundle', ['html', 'styles', 'scripts', 'images', 'fonts', 'extras']);
+gulp.task('bundle', ['html', 'styles', 'scripts', 'images', 'fonts', 'extras', 'sounds']);
 
 gulp.task('clean-bundle', sync(['clean', 'bundle']));
 
@@ -144,4 +150,5 @@ gulp.task('watch', sync(['clean-bundle', 'serve']), function() {
   gulp.watch('app/styles/**/*.scss', ['styles']);
   gulp.watch('app/images/**/*', ['images']);
   gulp.watch('app/fonts/**/*', ['fonts']);
+  gulp.watch('app/sounds/**/*', ['sounds']);
 });

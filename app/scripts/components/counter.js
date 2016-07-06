@@ -9,9 +9,8 @@ export default class extends React.Component {
   }
 
   handleNewSeconds() {
-
     this.setState((previousState) => {
-      return {seconds: previousState.seconds + 1}
+      return {seconds: previousState.seconds + 2}
     })
   }
 
