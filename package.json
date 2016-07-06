@@ -1,9 +1,6 @@
 {
-  "name": "react-testing",
+  "name": "mixer",
   "version": "0.0.0",
-  "dependencies": {
-    "node-static": "^0.7.7"
-  },
   "devDependencies": {
     "babel-jest": "^5.0.1",
     "babelify": "^6.0.2",
@@ -30,11 +27,18 @@
     "watchify": "^2.3.0"
   },
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "build": "npm install && bower install && gulp build",
+    "start": "npm run build && node index.js"
   },
   "browserify": {
     "transform": [
       "babelify"
     ]
+  },
+  "dependencies": {
+    "node-static": "^0.7.7"
   }
 }
