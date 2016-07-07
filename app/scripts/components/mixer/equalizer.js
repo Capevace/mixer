@@ -6,24 +6,50 @@ class Equalizer extends React.Component {
     super(props)
 
     this.state = {
-
+      lowShelfValue: 0,
+      midShelfValue: 0,
+      highShelfValue: 0
     }
+  }
+
+  handleHighChange (newHighValue) {
+    this.setState({
+      highShelfValue: newHighValue
+    })
+
+    this.props.onChange(newHighValue, 'high')
+  }
+
+  handleMidChange (newMidValue) {
+    this.setState({
+      midShelfValue: newMidValue
+    })
+
+    this.props.onChange(newMidValue, 'mid')
+  }
+
+  handleLowChange (newLowValue) {
+    this.setState({
+      lowShelfValue: newLowValue
+    })
+
+    this.props.onChange(newLowValue, 'low')
   }
 
   render () {
     return (
       <div className="row bottom">
-        <div className="row bottom">
-          <div className="col-sm-12">
-            <p className="centered">HF</p>
-            <Knob modifier={16} min={-15.0} max={15.0} />
-          </div>
+        <div className="row knob-row">
+          <p className="centered bottom">HF</p>
+          <Knob modifier={6} min={-40.0} max={40.0} onChange={this.handleHighChange.bind(this)} />
         </div>
-        <div className="row bottom">
-          <Knob min={-15.0} max={15.0} />
+        <div className="row knob-row">
+          <p className="centered bottom">MF</p>
+          <Knob modifier={6} min={-40.0} max={40.0} onChange={this.handleMidChange.bind(this)} />
         </div>
-        <div className="row bottom">
-          <Knob min={-15.0} max={15.0} />
+        <div className="row knob-row">
+          <p className="centered bottom">LF</p>
+          <Knob modifier={6} min={-40.0} max={40.0} onChange={this.handleLowChange.bind(this)} />
         </div>
       </div>
     )

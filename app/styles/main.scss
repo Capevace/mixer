@@ -46,6 +46,14 @@ body {
   width: 100%;
 }
 
+.knob-row {
+  height: 70px;
+}
+
+.slider-row {
+  height: 400px;
+}
+
 .knob {
   cursor: pointer;
   display: block;
@@ -75,7 +83,7 @@ body {
   text-align: center;
 }
 
-.row.bottom {
+.bottom {
   margin-bottom: 20px;
 }
 

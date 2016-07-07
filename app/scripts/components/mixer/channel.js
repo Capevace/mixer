@@ -1,5 +1,5 @@
 import React from 'react'
-import { loadSound, processAudioBuffer } from '../audio-processing'
+import { loadSound, processAudioBuffer, equalize } from '../audio-processing'
 import { clamp } from '../math'
 
 import Fader from './fader'
@@ -31,18 +31,42 @@ class Channel extends React.Component {
         return
 
       var audioSource = this.props.context.createBufferSource()
+      var gainNode =  this.props.context.createGain()
+      var highEqualizerNode = this.props.context.createBiquadFilter()
+      var midEqualizerNode = this.props.context.createBiquadFilter()
+      var lowEqualizerNode = this.props.context.createBiquadFilter()
+
       audioSource.buffer = this.state.audioBuffer
       audioSource.loop = true
 
-      var gainNode = this.props.context.createGain()
+      highEqualizerNode.type = 'peaking'
+      highEqualizerNode.frequency.value = 6500
+      highEqualizerNode.gain.value = 0
+      highEqualizerNode.Q.value = 1
+
+      midEqualizerNode.type = 'peaking'
+      midEqualizerNode.frequency.value = 550
+      midEqualizerNode.gain.value = 0
+      midEqualizerNode.Q.value = 1
+
+      lowEqualizerNode.type = 'peaking'
+      lowEqualizerNode.frequency.value = 100
+      lowEqualizerNode.gain.value = 0
+      lowEqualizerNode.Q.value = 1
 
       audioSource.connect(gainNode)
-      gainNode.connect(this.props.context.destination)
+      gainNode.connect(highEqualizerNode)
+      highEqualizerNode.connect(midEqualizerNode)
+      midEqualizerNode.connect(lowEqualizerNode)
+      lowEqualizerNode.connect(this.props.context.destination)
 
       this.setState({
         audioNodes: {
           audioSource: audioSource,
-          gainNode: gainNode
+          gainNode: gainNode,
+          highEqualizerNode: highEqualizerNode,
+          midEqualizerNode: midEqualizerNode,
+          lowEqualizerNode: lowEqualizerNode
         }
       }, () => {
         this.updateVolume(gainNode)
@@ -72,6 +96,47 @@ class Channel extends React.Component {
     })
   }
 
+  handleEqualizerChange (value, type) {
+    var equalizerNode
+    var assignableObject
+
+    switch (type) {
+      case 'high':
+        equalizerNode = this.state.audioNodes.highEqualizerNode
+        break
+      case 'mid':
+        equalizerNode = this.state.audioNodes.midEqualizerNode
+        break
+      case 'low':
+        equalizerNode = this.state.audioNodes.lowEqualizerNode
+        break
+      default:
+        return
+    }
+
+    equalizerNode.gain.value = value
+
+
+
+    switch (type) {
+      case 'high':
+        assignableObject = { highEqualizerNode: equalizerNode }
+        break
+      case 'mid':
+        assignableObject = { midEqualizerNode: equalizerNode }
+        break
+      case 'low':
+        assignableObject = { lowEqualizerNode: equalizerNode }
+        break
+      default:
+        return
+    }
+
+    this.setState({
+      audioNodes: Object.assign(this.state.audioNodes, assignableObject)
+    })
+  }
+
   updateVolume () {
     var gain = clamp(1 + ((this.state.faderValue + this.state.gainValue) / 60), 0.0, 2.0)
 
@@ -97,7 +162,7 @@ class Channel extends React.Component {
           <p className="centered">{this.props.channel.name}</p>
         </div>
         <GainKnob onChange={this.handleGainChange.bind(this)} />
-        <Equalizer />
+        <Equalizer onChange={this.handleEqualizerChange.bind(this)} />
         <MuteButton initialMuteState={this.props.channel.initialMuteState} onChange={this.handleMuteStateChange.bind(this)} />
         <Fader initialValue={this.state.faderValue} onChange={this.handleFaderChange.bind(this)} />
       </div>

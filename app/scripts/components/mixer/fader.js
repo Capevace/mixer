@@ -34,7 +34,7 @@ class Fader extends React.Component {
 
   render () {
     return (
-      <div class="row">
+      <div class="row slider-row">
         <p className="volume-label">
           Value: {this.readableValue()}
         </p>
