@@ -30,7 +30,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "build": "npm install && bower install && gulp build",
+    "build": "npm install && bower install",
     "start": "npm run build && node index.js"
   },
   "browserify": {
