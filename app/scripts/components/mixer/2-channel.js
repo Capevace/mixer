@@ -2,10 +2,9 @@ import React from 'react'
 import { loadSound, processAudioBuffer, equalize } from '../audio-processing'
 import { clamp } from '../math'
 
-import Fader from './fader'
-import MuteButton from './mute-button'
-import GainKnob from './gain-knob'
+import MuteButton from './2-mute-button'
 import ThreeBandEqualizer from './2-equalizer'
+import VolumeFader from './2-volume-fader'
 
 
 class Channel extends React.Component {
@@ -28,10 +27,9 @@ class Channel extends React.Component {
     // If true, channel should start playing
     if (nextProps.playing) {
       // Abort if all nodes havent connected yet.
-      if (!this.state.nodesConnected || !this.state.audioBuffer)
+      if (!this.state.nodesConnected || this.props.channel.isMaster)
         return
 
-      console.log(this.state.audioBuffer);
       // Create new AudioSource with previously loaded buffer
       var audioSource = this.props.audioContext.createBufferSource()
       audioSource.buffer = this.state.audioBuffer
@@ -54,34 +52,27 @@ class Channel extends React.Component {
 
 
   componentDidMount () {
-    var loadPromise
+    var loadSoundPromise
 
+
+    // If channel is master, theres no need to load a sound so promise is
+    // instantly resolved.
     if (this.props.channel.isMaster) {
-      loadPromise = new Promise((resolve) => {
-        resolve()
-      })
+      loadSoundPromise = Promise.resolve()
     } else {
-      loadPromise = loadSound(this.props.channel.source)
-          .then(buffer => {console.log(this.props); return buffer})
+      loadSoundPromise = loadSound(this.props.channel.source)
           .then(buffer => processAudioBuffer(buffer, this.props.audioContext))
-          .then(buffer => {
-            console.log(buffer);
-            return buffer
-          })
-          .then(buffer => this.setState({audioBuffer: buffer}, () => {
-            if (!this.state.nodesConnected) {
-              return
-            }
-          }))
+          .then(buffer => this.setState({audioBuffer: buffer}))
     }
 
     // After processing the audio and connecting the nodes are both finished,
     //  - update state to nodesConnected: true so that nodes dont keep reconnecting
     //  - notify parent component that all nodes are connected
-    Promise.all([loadPromise, this.startConnect()])
+    Promise.all([loadSoundPromise, this.startConnect()])
       .then(() => {
         this.setState({nodesConnected: true})
 
+        // Notify parent that channel has connected its nodes
         if (this.props.onReady)
           this.props.onReady(this.state.connectors[this.state.connectors.length - 1])
       })
@@ -102,7 +93,7 @@ class Channel extends React.Component {
         connectors: [
           this.props.initialNode
         ],
-        nodeCount: this.props.channel.mixerNodes.length || 0
+        nodeCount: this.props.channel.nodes.length || 0
       })
     })
   }
@@ -111,16 +102,20 @@ class Channel extends React.Component {
     // Push new node to connectors
     // (nextNode is getting signal before the previously handled node)
     var connectors = this.state.connectors
+
     connectors.push(nextNode)
 
     // If connectors are at nodeCount, resolve connect
     // (nodeCount + 1 so the context destination node is also included in the count)
     //
     // Otherwise update state with new connectors to trigger next connect
-    if (this.state.connectors.length >= this.state.nodeCount + 1 && this.connectResolve) {
+    if (this.state.connectors.length == this.state.nodeCount + 1 && this.connectResolve) {
       this.state.connectors = connectors
+      this.state.nodesConnected = true
+
       this.connectResolve()
-    } else {
+      this.connectResolve = false
+    } else if (this.state.connectors.length < this.state.nodeCount + 1) {
       this.setState({connectors: connectors})
     }
   }
@@ -131,35 +126,45 @@ class Channel extends React.Component {
         <div className="row bottom">
           <p className="centered">{this.props.channel.name}</p>
         </div>
-        {/*<GainKnob
-          ref={c => {this._gainKnob = c}}
-          onChange={this.handleGainChange.bind(this)}
-
-        />*/}
-        <ThreeBandEqualizer
-          connector={this.state.connectors[0]}
-          onConnect={this.handleConnect.bind(this)}
-          audioContext={this.props.audioContext}
-          shouldReconnect={!this.state.nodesConnected}
-        />
-        {/*<MuteButton
-          ref={c => {this._muteButton = c}}
-          initialMuteState={this.props.channel.initialMuteState}
-          onChange={this.handleMuteStateChange.bind(this)}
-        />
-        <Fader
-          ref={c => {this._fader = c}}
-          initialValue={this.state.faderValue}
-          onChange={this.handleFaderChange.bind(this)}
-        />*/}
+        {this.props.channel.nodes.map((node, index) => {
+          switch (node.type) {
+            case 'ThreeBandEqualizer':
+              return <ThreeBandEqualizer
+                        key={index}
+                        audioContext={this.props.audioContext}
+                        connector={this.state.connectors[index]}
+                        onConnect={this.handleConnect.bind(this)}
+                        initialNodeState={node.initialNodeState}
+                      />
+              break
+            case 'VolumeFader':
+              return <VolumeFader
+                        key={index}
+                        audioContext={this.props.audioContext}
+                        connector={this.state.connectors[index]}
+                        onConnect={this.handleConnect.bind(this)}
+                        initialNodeState={node.initialNodeState}
+                    />
+              break
+            case 'MuteButton':
+              return <MuteButton
+                        audioContext={this.props.audioContext}
+                        connector={this.state.connectors[index]}
+                        onConnect={this.handleConnect.bind(this)}
+                        key={index}
+                        initialNodeState={node.initialNodeState}
+                      />
+              break
+            default:
+              return <div>Unknown ChannelNodeType: {node.type}</div>
+          }})
+        }
       </div>
     )
   }
 }
 
 export default Channel
-
-
 
 
 

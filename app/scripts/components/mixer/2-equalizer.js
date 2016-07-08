@@ -1,78 +1,51 @@
 import React from 'react'
-import Knob from './knob'
+import Knob from '../elements/knob'
+import ChannelNode from './channel-node'
 
-class ThreeBandEqualizer extends React.Component {
+class ThreeBandEqualizer extends ChannelNode {
   constructor (props) {
     super(props)
 
-    var highEqualizerNode = this.props.audioContext.createBiquadFilter()
-    highEqualizerNode.type = 'peaking'
-    highEqualizerNode.frequency.value = 6500
-    highEqualizerNode.gain.value = 0
-    highEqualizerNode.Q.value = 1
+    this.highEqualizerNode = this.props.audioContext.createBiquadFilter()
+    this.highEqualizerNode.type = 'peaking'
+    this.highEqualizerNode.frequency.value = 6500
+    this.highEqualizerNode.gain.value = 0
+    this.highEqualizerNode.Q.value = 1
 
-    var midEqualizerNode = this.props.audioContext.createBiquadFilter()
-    midEqualizerNode.type = 'peaking'
-    midEqualizerNode.frequency.value = 550
-    midEqualizerNode.gain.value = 0
-    midEqualizerNode.Q.value = 1
+    this.midEqualizerNode = this.props.audioContext.createBiquadFilter()
+    this.midEqualizerNode.type = 'peaking'
+    this.midEqualizerNode.frequency.value = 550
+    this.midEqualizerNode.gain.value = 0
+    this.midEqualizerNode.Q.value = 1
 
-    var lowEqualizerNode = this.props.audioContext.createBiquadFilter()
-    lowEqualizerNode.type = 'peaking'
-    lowEqualizerNode.frequency.value = 100
-    lowEqualizerNode.gain.value = 0
-    lowEqualizerNode.Q.value = 1
-
-    this.state = {
-      lowShelfValue: 0,
-      midShelfValue: 0,
-      highShelfValue: 0,
-      highEqualizerNode: highEqualizerNode,
-      midEqualizerNode: midEqualizerNode,
-      lowEqualizerNode: lowEqualizerNode
-    }
-
-    this.connects = 's'
-  }
-
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.connector && nextProps.shouldReconnect) {
-      this.connect(nextProps.connector)
-
-      this.connected = true
-      this.props.onConnect(this.getFirstAudioNode())
-    }
+    this.lowEqualizerNode = this.props.audioContext.createBiquadFilter()
+    this.lowEqualizerNode.type = 'peaking'
+    this.lowEqualizerNode.frequency.value = 100
+    this.lowEqualizerNode.gain.value = 0
+    this.lowEqualizerNode.Q.value = 1
   }
 
   getFirstAudioNode () {
-    return this.state.highEqualizerNode
+    this.highEqualizerNode.name = 'test'
+    return this.highEqualizerNode
   }
 
   connect (destination) {
-    this.state.highEqualizerNode.connect(this.state.midEqualizerNode)
-    this.state.midEqualizerNode.connect(this.state.lowEqualizerNode)
-    this.state.lowEqualizerNode.connect(destination)
+    this.highEqualizerNode.connect(this.midEqualizerNode)
+    this.midEqualizerNode.connect(this.lowEqualizerNode)
+    this.lowEqualizerNode.connect(destination)
   }
 
   handleHighChange (value) {
-    var equalizerNode = this.state.highEqualizerNode
-    equalizerNode.gain.value = value
-
-    this.setState({ highEqualizerNode: equalizerNode })
+    this.highEqualizerNode.gain.value = value
   }
 
   handleMidChange (value) {
-    var equalizerNode = this.state.midEqualizerNode
-    equalizerNode.gain.value = value
-
-    this.setState({ midEqualizerNode: equalizerNode })
+    this.midEqualizerNode.gain.value = value
   }
 
   handleLowChange (value) {
-    var equalizerNode = this.state.lowEqualizerNode
-    equalizerNode.gain.value = value
-
-    this.setState({ lowEqualizerNode: equalizerNode })
+    this.lowEqualizerNode.gain.value = value
   }
 
   render () {

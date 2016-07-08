@@ -1,5 +1,5 @@
 import React from 'react'
-import Knob from './knob'
+import Knob from '../elements/knob'
 
 class GainKnob extends React.Component {
   constructor (props) {

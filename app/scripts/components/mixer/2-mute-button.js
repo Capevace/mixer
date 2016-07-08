@@ -1,22 +1,36 @@
 import React from 'react'
+import ChannelNode from './channel-node'
 
-
-class MuteButton extends React.Component {
+class MuteButton extends ChannelNode {
   constructor (props) {
     super(props)
-    console.log(props);
+
+    this.gainNode = this.props.audioContext.createGain()
+
     this.state = {
-      muted: props.initialMuteState
+      muted: this.props.initialNodeState
     }
+  }
+
+  connect (destination) {
+    this.gainNode.connect(destination)
+  }
+
+  getFirstAudioNode () {
+    return this.gainNode
   }
 
   handleClick () {
     var muted = !this.state.muted
+    this.gainNode.gain.value = muted ? 0 : 1
+
     this.setState({
       muted: muted
     })
+  }
 
-    this.props.onChange(muted)
+  componentWillReceiveProps (props) {
+    super.componentWillReceiveProps(props)
   }
 
   render () {

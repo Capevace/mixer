@@ -39,6 +39,7 @@
     ]
   },
   "dependencies": {
+    "bower": "^1.7.9",
     "node-static": "^0.7.7"
   }
 }

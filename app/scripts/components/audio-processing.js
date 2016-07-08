@@ -14,7 +14,6 @@ export default {
   processAudioBuffer: (buffer, context) => new Promise((resolve, reject) => {
     try {
       context.decodeAudioData(buffer, resolve, reject)
-      resolve()
     } catch (e) {
       console.error('Failed to decode', e);
       reject(e)

@@ -19,51 +19,54 @@ class Mixer extends React.Component {
     var SafeAudioContext = window.AudioContext || window.webkitAudioContext
     var context = new SafeAudioContext()
 
+    this.nodes = [
+      {
+        type: 'ThreeBandEqualizer',
+        initialNodeState: {
+          high: 0,
+          mid: 0,
+          low: 0
+        }
+      },
+      {
+        type: 'VolumeFader',
+        initialNodeState: 0
+      }
+      ,
+      {
+        type: 'MuteButton',
+        initialNodeState: false
+      }
+    ]
+
     this.state = {
       // Data to initialize channels with
       channels: [
         {
           name: 'Drums',
           source: 'sounds/drums.mp3',
-          initialFaderValue: 0,
-          mixerNodes: [
-            1
-          ]
-        },
+          nodes: this.nodes
+        }
+        ,
         {
           name: 'Bass',
           source: 'sounds/bass.mp3',
-          initialFaderValue: 0,
-          mixerNodes: [
-            0
-          ]
+          nodes: this.nodes
         },
         {
           name: 'Piano',
           source: 'sounds/piano.mp3',
-          initialFaderValue: 0,
-          initialMuteState: false,
-          mixerNodes: [
-            0
-          ]
+          nodes: this.nodes
         },
         {
           name: 'Clav',
           source: 'sounds/clav.mp3',
-          initialFaderValue: -60,
-          initialMuteState: true,
-          mixerNodes: [
-            0
-          ]
+          nodes: this.nodes
         },
         {
           name: 'Sax',
           source: 'sounds/sax.mp3',
-          initialFaderValue: 10,
-          initialMuteState: true,
-          mixerNodes: [
-            0
-          ]
+          nodes: this.nodes
         }
       ],
       context: context,
@@ -77,7 +80,6 @@ class Mixer extends React.Component {
   }
 
   handleMasterReady (masterNode) {
-    console.log('Master ready!', masterNode);
     this.setState({masterNode: masterNode})
   }
 
@@ -93,7 +95,6 @@ class Mixer extends React.Component {
     var renderChannels = []
 
     if (this.state.masterNode) {
-      console.log('Already?!');
       renderChannels = this.state.channels
     }
 
@@ -101,7 +102,7 @@ class Mixer extends React.Component {
       <div className="mixer container-fluid">
         <br />
         <div className="row">
-          <div className="col-md-12">
+          <div className="container">
             <button className="btn btn-lg primary" onClick={this.togglePlay.bind(this)}>
               {this.state.playing ? 'Pause' : 'Play'}
             </button>
@@ -124,9 +125,7 @@ class Mixer extends React.Component {
               isMaster: true,
               initialFaderValue: 0,
               initialMuteState: false,
-              mixerNodes: [
-                0
-              ]
+              nodes: this.nodes
             }}
             key={'master'}
             audioContext={this.state.context}
