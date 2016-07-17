@@ -1,39 +1,39 @@
-import React from 'react'
-import ChannelNode from './channel-node'
-import { clamp } from '../math'
+import React from 'react';
+import ChannelNode from './channel-node';
+import { clamp } from '../math';
 
 class VolumeFader extends ChannelNode {
   constructor (props) {
-    super(props)
+    super(props);
 
-    this.gainNode = this.props.audioContext.createGain()
+    this.gainNode = this.props.audioContext.createGain();
 
     this.state = {
       value: props.initialValue || 0
-    }
+    };
   }
 
   getFirstAudioNode () {
-    return this.gainNode
+    return this.gainNode;
   }
 
   connect (destination) {
-    this.gainNode.connect(destination)
+    this.gainNode.connect(destination);
   }
 
   handleChange (event) {
-    this.gainNode.gain.value = clamp(1 + (event.target.value / 60), 0.0, 2.0)
-    this.setState({value: event.target.value})
+    this.gainNode.gain.value = clamp(1 + (event.target.value / 60), 0.0, 2.0);
+    this.setState({value: event.target.value});
   }
 
   readableValue () {
-    var value = this.state.value
+    var value = this.state.value;
 
     if (value <= -60) {
-      return '-∞ db'
+      return '-∞ db';
     }
 
-    return (value === 0 ? '' : (value > 0 ? '+' : '')) + value + ' db'
+    return (value === 0 ? '' : (value > 0 ? '+' : '')) + value + ' db';
   }
 
   render () {
@@ -53,8 +53,8 @@ class VolumeFader extends ChannelNode {
           onChange={this.handleChange.bind(this)}
           />
       </div>
-    )
+    );
   }
 }
 
-export default VolumeFader
+export default VolumeFader;

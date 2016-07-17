@@ -1,5 +1,5 @@
-import React from 'react'
-import Channel from './2-channel'
+import React from 'react';
+import Channel from './channel';
 
 /*
 
@@ -13,11 +13,11 @@ import Channel from './2-channel'
 
 class Mixer extends React.Component {
   constructor (props) {
-    super(props)
+    super(props);
 
     // Determine if AudioContext is even available
-    var SafeAudioContext = window.AudioContext || window.webkitAudioContext
-    var context = new SafeAudioContext()
+    var SafeAudioContext = window.AudioContext || window.webkitAudioContext;
+    var context = new SafeAudioContext();
 
     this.nodes = [
       {
@@ -37,7 +37,7 @@ class Mixer extends React.Component {
         type: 'MuteButton',
         initialNodeState: false
       }
-    ]
+    ];
 
     this.state = {
       // Data to initialize channels with
@@ -72,30 +72,30 @@ class Mixer extends React.Component {
       context: context,
       masterNode: null,
       playing: false
-    }
+    };
   }
 
   togglePlay () {
-    this.setState({playing: !this.state.playing})
+    this.setState({playing: !this.state.playing});
   }
 
   handleMasterReady (masterNode) {
-    this.setState({masterNode: masterNode})
+    this.setState({masterNode: masterNode});
   }
 
   renderChannels () {
     if (this.state.masterNode) {
       this.state.channels.map((channel, index) => (
         <Channel channel={channel} key={index} audioContext={this.state.context} playing={this.state.playing} initialNode={this.state.masterNode} />
-      ))
+      ));
     }
   }
 
   render () {
-    var renderChannels = []
+    var renderChannels = [];
 
     if (this.state.masterNode) {
-      renderChannels = this.state.channels
+      renderChannels = this.state.channels;
     }
 
     return (
@@ -134,8 +134,8 @@ class Mixer extends React.Component {
           />
         </div>
       </div>
-    )
+    );
   }
 }
 
-export default Mixer
+export default Mixer;

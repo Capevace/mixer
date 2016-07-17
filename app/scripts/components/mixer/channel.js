@@ -1,157 +1,121 @@
-import React from 'react'
-import { loadSound, processAudioBuffer, equalize } from '../audio-processing'
-import { clamp } from '../math'
+import React from 'react';
+import { loadSound, processAudioBuffer } from '../audio-processing';
 
-import Fader from './fader'
-import MuteButton from './mute-button'
-import GainKnob from './gain-knob'
-import Equalizer from './equalizer'
+import MuteButton from './mute-button';
+import ThreeBandEqualizer from './three-band-equalizer';
+import VolumeFader from './volume-fader';
 
 
 class Channel extends React.Component {
   constructor (props) {
-    super(props)
+    super(props);
+
     this.state = {
       audioBuffer: null,
-      audioNodes: {},
-      gainValue: 0,
-      faderValue: this.props.channel.initialFaderValue || 0,
-      muted: this.props.channel.initialMuteState || false
-    }
+      audioSource: null,
 
-    loadSound(this.props.channel.source)
-      .then(buffer => processAudioBuffer(buffer, props.context))
-      .then(buffer => this.setState({audioBuffer: buffer}))
+      connectors: [],
+      nodeCount: 0,
+      nodesConnected: false
+    };
+
+    this.connectResolve = null;
   }
 
   componentWillReceiveProps (nextProps) {
+    // If true, channel should start playing
     if (nextProps.playing) {
+      // Abort if all nodes havent connected yet.
+      if(!this.state.nodesConnected || this.props.channel.master)
+        return;
 
-      if (!this.state.audioBuffer)
-        return
+      // Create new AudioSource with previously loaded buffer
+      var audioSource = this.props.audioContext.createBufferSource();
+      audioSource.buffer = this.state.audioBuffer;
+      audioSource.loop = true;
 
-      var audioSource = this.props.context.createBufferSource()
-      var gainNode =  this.props.context.createGain()
-      var highEqualizerNode = this.props.context.createBiquadFilter()
-      var midEqualizerNode = this.props.context.createBiquadFilter()
-      var lowEqualizerNode = this.props.context.createBiquadFilter()
+      // Connect AudioSource to last node in connectors array (=> first node receiving signal)
+      audioSource.connect(this.state.connectors[this.state.connectors.length - 1]);
 
-      audioSource.buffer = this.state.audioBuffer
-      audioSource.loop = true
-
-      highEqualizerNode.type = 'peaking'
-      highEqualizerNode.frequency.value = 6500
-      highEqualizerNode.gain.value = 0
-      highEqualizerNode.Q.value = 1
-
-      midEqualizerNode.type = 'peaking'
-      midEqualizerNode.frequency.value = 550
-      midEqualizerNode.gain.value = 0
-      midEqualizerNode.Q.value = 1
-
-      lowEqualizerNode.type = 'peaking'
-      lowEqualizerNode.frequency.value = 100
-      lowEqualizerNode.gain.value = 0
-      lowEqualizerNode.Q.value = 1
-
-      audioSource.connect(gainNode)
-      gainNode.connect(highEqualizerNode)
-      highEqualizerNode.connect(midEqualizerNode)
-      midEqualizerNode.connect(lowEqualizerNode)
-      lowEqualizerNode.connect(this.props.context.destination)
-
-      this.setState({
-        audioNodes: {
-          audioSource: audioSource,
-          gainNode: gainNode,
-          highEqualizerNode: highEqualizerNode,
-          midEqualizerNode: midEqualizerNode,
-          lowEqualizerNode: lowEqualizerNode
-        }
-      }, () => {
-        this.updateVolume(gainNode)
-        audioSource.start(0)
-      })
+      // Start playing after updating component state
+      this.setState({ audioSource: audioSource }, () => { audioSource.start(0); });
     } else {
-      if (this.state.audioNodes.audioSource)
-        this.state.audioNodes.audioSource.stop(0)
+      if (this.state.audioSource) {
+        // If AudioSource exists, stop playing, disconnect from node and update state
+        this.state.audioSource.stop(0);
+        this.state.audioSource.disconnect();
+        this.setState({ audioSource: null });
+      }
     }
   }
 
-  handleFaderChange (faderValue) {
-    this.setState({faderValue: parseFloat(faderValue)}, () => {
-      this.updateVolume()
-    })
-  }
 
-  handleGainChange (gainValue) {
-    this.setState({gainValue: parseFloat(gainValue)}, () => {
-      this.updateVolume()
-    })
-  }
+  componentDidMount () {
+    var loadSoundPromise;
 
-  handleMuteStateChange (muted) {
-    this.setState({muted: muted}, () => {
-      this.updateVolume()
-    })
-  }
 
-  handleEqualizerChange (value, type) {
-    var equalizerNode
-    var assignableObject
-
-    switch (type) {
-      case 'high':
-        equalizerNode = this.state.audioNodes.highEqualizerNode
-        break
-      case 'mid':
-        equalizerNode = this.state.audioNodes.midEqualizerNode
-        break
-      case 'low':
-        equalizerNode = this.state.audioNodes.lowEqualizerNode
-        break
-      default:
-        return
+    // If channel is master, theres no need to load a sound so promise is
+    // instantly resolved.
+    if (this.props.channel.isMaster) {
+      loadSoundPromise = Promise.resolve();
+    } else {
+      loadSoundPromise = loadSound(this.props.channel.source)
+          .then(buffer => processAudioBuffer(buffer, this.props.audioContext))
+          .then(buffer => this.setState({audioBuffer: buffer}));
     }
 
-    equalizerNode.gain.value = value
+    // After processing the audio and connecting the nodes are both finished,
+    //  - update state to nodesConnected: true so that nodes dont keep reconnecting
+    //  - notify parent component that all nodes are connected
+    Promise.all([loadSoundPromise, this.startConnect()])
+      .then(() => {
+        this.setState({nodesConnected: true});
 
-
-
-    switch (type) {
-      case 'high':
-        assignableObject = { highEqualizerNode: equalizerNode }
-        break
-      case 'mid':
-        assignableObject = { midEqualizerNode: equalizerNode }
-        break
-      case 'low':
-        assignableObject = { lowEqualizerNode: equalizerNode }
-        break
-      default:
-        return
-    }
-
-    this.setState({
-      audioNodes: Object.assign(this.state.audioNodes, assignableObject)
-    })
+        // Notify parent that channel has connected its nodes
+        if (this.props.onReady)
+          this.props.onReady(this.state.connectors[this.state.connectors.length - 1]);
+      });
   }
 
-  updateVolume () {
-    var gain = clamp(1 + ((this.state.faderValue + this.state.gainValue) / 60), 0.0, 2.0)
+  startConnect () {
+    return new Promise((resolve) => {
+      // Save resolve method so promise can be resolved later in other function
+      this.connectResolve = resolve;
 
-    if (this.state.muted)
-      gain = 0
-
-    if (this.state.audioNodes.gainNode) {
-      var gainNode = this.state.audioNodes.gainNode
-      gainNode.gain.value = gain
-
+      // Update state to
+      //  - nodesConnected: false so nodes start connecting
+      //  - add initialNode to connectors so
+      //    first node (=> last node receiving signal) can connect to it
+      //  - update nodeCount, so we know when to stop pushing nodes to connectors
       this.setState({
-        audioNodes: Object.assign(this.state.audioNodes, {
-          gainNode: gainNode
-        })
-      })
+        nodesConnected: false,
+        connectors: [
+          this.props.initialNode
+        ],
+        nodeCount: this.props.channel.nodes.length || 0
+      });
+    });
+  }
+
+  handleConnect (nextNode) {
+    // Push new node to connectors
+    // (nextNode is getting signal before the previously handled node)
+    var connectors = this.state.connectors;
+
+    connectors.push(nextNode);
+
+    // If connectors are at nodeCount, resolve connect
+    // (nodeCount + 1 so the context destination node is also included in the count)
+    //
+    // Otherwise update state with new connectors to trigger next connect
+    if (this.state.connectors.length == this.state.nodeCount + 1 && this.connectResolve) {
+      this.state.connectors = connectors;
+      this.state.nodesConnected = true;
+
+      this.connectResolve();
+      this.connectResolve = false;
+    } else if (this.state.connectors.length < this.state.nodeCount + 1) {
+      this.setState({connectors: connectors});
     }
   }
 
@@ -161,13 +125,69 @@ class Channel extends React.Component {
         <div className="row bottom">
           <p className="centered">{this.props.channel.name}</p>
         </div>
-        <GainKnob onChange={this.handleGainChange.bind(this)} />
-        <Equalizer onChange={this.handleEqualizerChange.bind(this)} />
-        <MuteButton initialMuteState={this.props.channel.initialMuteState} onChange={this.handleMuteStateChange.bind(this)} />
-        <Fader initialValue={this.state.faderValue} onChange={this.handleFaderChange.bind(this)} />
+        {this.props.channel.nodes.map((node, index) => {
+          switch (node.type) {
+          case 'ThreeBandEqualizer':
+            return <ThreeBandEqualizer
+                key={index}
+                audioContext={this.props.audioContext}
+                connector={this.state.connectors[index]}
+                onConnect={this.handleConnect.bind(this)}
+                initialNodeState={node.initialNodeState}
+              />;
+
+          case 'VolumeFader':
+            return <VolumeFader
+              key={index}
+              audioContext={this.props.audioContext}
+              connector={this.state.connectors[index]}
+              onConnect={this.handleConnect.bind(this)}
+              initialNodeState={node.initialNodeState}
+            />;
+
+          case 'MuteButton':
+            return <MuteButton
+              audioContext={this.props.audioContext}
+              connector={this.state.connectors[index]}
+              onConnect={this.handleConnect.bind(this)}
+              key={index}
+              initialNodeState={node.initialNodeState}
+            />;
+
+          default:
+            return <div>Unknown ChannelNodeType: {node.type}</div>;
+          }})
+        }
       </div>
-    )
+    );
   }
 }
 
-export default Channel
+Channel.propTypes = {
+  audioContext: React.PropTypes.instanceOf(window.AudioContext).isRequired,
+  channel: React.PropTypes.object.isRequired,
+  initialNode: React.PropTypes.object.isRequired,
+  onReady: React.PropTypes.func.isRequired
+};
+
+export default Channel;
+
+
+
+// updateVolume () {
+//   var gain = clamp(1 + ((this.state.faderValue + this.state.gainValue) / 60), 0.0, 2.0)
+//
+//   if (this.state.muted)
+//     gain = 0
+//
+//   if (this.state.audioNodes.gainNode) {
+//     var gainNode = this.state.audioNodes.gainNode
+//     gainNode.gain.value = gain
+//
+//     this.setState({
+//       audioNodes: Object.assign(this.state.audioNodes, {
+//         gainNode: gainNode
+//       })
+//     })
+//   }
+// }
