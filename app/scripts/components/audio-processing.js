@@ -6,33 +6,33 @@ export default {
 
     // Decode asynchronously
     request.onload = function() {
-      resolve(request.response)
-    }
+      resolve(request.response);
+    };
     request.send();
   }),
 
   processAudioBuffer: (buffer, context) => new Promise((resolve, reject) => {
     try {
-      context.decodeAudioData(buffer, resolve, reject)
+      context.decodeAudioData(buffer, resolve, reject);
     } catch (e) {
       console.error('Failed to decode', e);
-      reject(e)
+      reject(e);
     }
   }),
 
   equalize: (audioProcessingEvent) => {
-    var inputBuffer = audioProcessingEvent.inputBuffer
-    var outputBuffer = audioProcessingEvent.outputBuffer
+    var inputBuffer = audioProcessingEvent.inputBuffer;
+    var outputBuffer = audioProcessingEvent.outputBuffer;
 
     for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-      var inputData = inputBuffer.getChannelData(channel)
-      var outputData = outputBuffer.getChannelData(channel)
+      var inputData = inputBuffer.getChannelData(channel);
+      var outputData = outputBuffer.getChannelData(channel);
 
       for(var sample = 0; sample < inputBuffer.length; sample++) {
-        outputData[sample] = inputData[sample]
+        outputData[sample] = inputData[sample];
 
-        outputData[sample] += ((Math.random() * 2) - 1) * 0.2
+        outputData[sample] += ((Math.random() * 2) - 1) * 0.2;
       }
     }
   }
-}
+};

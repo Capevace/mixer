@@ -7368,6 +7368,10 @@ body {
   margin-bottom: 20px;
 }
 
+canvas.visualizer {
+  width: 100%;
+}
+
 input[type=range].music-slider {
   -webkit-appearance: none;
   width: 100%;
@@ -7378,7 +7382,7 @@ input[type=range].music-slider {
   position: relative;
   margin-left: 50%;
   left: -150px;
-  margin-top: 50%;
+  margin-top: 60px;
   top: 110px;
   -webkit-transform: rotateZ(-90deg);
           transform: rotateZ(-90deg);
@@ -7407,6 +7411,7 @@ input[type=range].music-slider::-webkit-slider-thumb {
   width: 31px;
   border-radius: 5px;
   background: #191919;
+  cursor: -webkit-grab;
   cursor: grab;
   -webkit-appearance: none;
   margin-top: -19.15px;

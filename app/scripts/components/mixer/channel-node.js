@@ -3,7 +3,7 @@ import React from 'react';
 class ChannelNode extends React.Component {
   constructor (props) {
     super(props);
-
+    console.log(this);
     if (!this.props.audioContext)
       console.error('An AudioContext must be passed as a property in order to use the ChannelNode');
   }

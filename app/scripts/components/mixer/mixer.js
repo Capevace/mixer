@@ -21,6 +21,10 @@ class Mixer extends React.Component {
 
     this.nodes = [
       {
+        type: 'Visualizer',
+        initialNodeState: false
+      },
+      {
         type: 'ThreeBandEqualizer',
         initialNodeState: {
           high: 0,
@@ -30,7 +34,7 @@ class Mixer extends React.Component {
       },
       {
         type: 'VolumeFader',
-        initialNodeState: 0
+        initialNodeState: -60
       }
       ,
       {

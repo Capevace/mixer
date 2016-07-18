@@ -44,6 +44,7 @@
     "eslint-plugin-react": "^5.2.2",
     "gulp": "^3.9.1",
     "gulp-cli": "^1.2.1",
-    "node-static": "^0.7.7"
+    "node-static": "^0.7.7",
+    "promise-polyfill": "^5.2.1"
   }
 }

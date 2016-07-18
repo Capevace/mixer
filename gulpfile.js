@@ -37,10 +37,10 @@ var bundler = {
 
 gulp.task('styles', function() {
   return $.rubySass('app/styles/main.scss', {
-      style: 'expanded',
-      precision: 10,
-      loadPath: ['app/bower_components']
-    })
+    style: 'expanded',
+    precision: 10,
+    loadPath: ['app/bower_components']
+  })
     .on('error', $.util.log.bind($.util, 'Sass Error'))
     .pipe($.autoprefixer('last 1 version'))
     .pipe(gulp.dest('dist/styles'))

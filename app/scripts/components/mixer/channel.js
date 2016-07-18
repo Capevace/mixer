@@ -4,6 +4,7 @@ import { loadSound, processAudioBuffer } from '../audio-processing';
 import MuteButton from './mute-button';
 import ThreeBandEqualizer from './three-band-equalizer';
 import VolumeFader from './volume-fader';
+import Visualizer from './visualizer';
 
 
 class Channel extends React.Component {
@@ -153,6 +154,15 @@ class Channel extends React.Component {
               key={index}
               initialNodeState={node.initialNodeState}
             />;
+          case 'Visualizer':
+            return <Visualizer
+              audioContext={this.props.audioContext}
+              connector={this.state.connectors[index]}
+              onConnect={this.handleConnect.bind(this)}
+              key={index}
+              initialNodeState={node.initialNodeState}
+              playing={this.props.playing}
+            />;
 
           default:
             return <div>Unknown ChannelNodeType: {node.type}</div>;
@@ -164,10 +174,11 @@ class Channel extends React.Component {
 }
 
 Channel.propTypes = {
-  audioContext: React.PropTypes.instanceOf(window.AudioContext).isRequired,
+  audioContext: React.PropTypes.instanceOf(window.AudioContext || window.webkitAudioContext).isRequired,
   channel: React.PropTypes.object.isRequired,
   initialNode: React.PropTypes.object.isRequired,
-  onReady: React.PropTypes.func.isRequired
+  onReady: React.PropTypes.func.isRequired,
+  playing: React.PropTypes.bool.isRequired
 };
 
 export default Channel;

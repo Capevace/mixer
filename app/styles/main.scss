@@ -87,6 +87,10 @@ body {
   margin-bottom: 20px;
 }
 
+canvas.visualizer {
+  width: 100%;
+}
+
 input[type=range].music-slider {
   -webkit-appearance: none;
   width: 100%;

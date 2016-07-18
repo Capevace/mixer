@@ -26,7 +26,6 @@ class ThreeBandEqualizer extends ChannelNode {
   }
 
   getFirstAudioNode () {
-    this.highEqualizerNode.name = 'test';
     return this.highEqualizerNode;
   }
 

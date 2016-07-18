@@ -6,10 +6,12 @@ class VolumeFader extends ChannelNode {
   constructor (props) {
     super(props);
 
+    const initialValue = props.initialNodeState || 0;
     this.gainNode = this.props.audioContext.createGain();
-
+    this.gainNode.gain.value = clamp(1 + (initialValue / 60), 0.0, 2.0);
+      
     this.state = {
-      value: props.initialValue || 0
+      value: initialValue
     };
   }
 
